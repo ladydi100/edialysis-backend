@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const userRoutes = require('./src/routes/userRoutes');
+const medicationRoutes = require('./src/routes/medicationRoutes');
 
 const app = express();
 
@@ -17,6 +18,7 @@ app.use(bodyParser.json());
 
 // Rutas
 app.use('/api', userRoutes);
+app.use('/api', medicationRoutes);
 
 // Iniciar el servidor
 const PORT = 5000;
