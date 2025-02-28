@@ -1,14 +1,32 @@
 const connection = require('../config/db');
 
+/*
 const addMedication = (req, res) => {
-  const { name, startDate, endDate, dosage, times, color, notes, alarmEnabled } = req.body;
+  const { name, dosage, times, color, notes, alarmEnabled, days } = req.body;
+
+  connection.query(
+    'INSERT INTO medications (name, dosage, time, color, notes, alarm_enabled, days) VALUES (?, ?, ?, ?, ?, ?, ?)',
+    [name, dosage, JSON.stringify(times), color, notes, alarmEnabled, JSON.stringify(days)],
+    (err, results) => {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+      res.json({ message: 'Medicamento añadido exitosamente' });
+    }
+  );
+};
+*/
+
+
+const addMedication = (req, res) => {
+  const { name, dosage, times, color, notes, alarmEnabled, days } = req.body;
 
   connection.beginTransaction(err => {
     if (err) { return res.status(500).json({ error: err.message }); }
 
     connection.query(
-      'INSERT INTO medications (name, start_date, end_date, dosage, color, notes, alarm_enabled) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [name, startDate, endDate, dosage, color, notes, alarmEnabled],
+      'INSERT INTO medications (name, dosage, color, notes, alarm_enabled, days) VALUES (?, ?, ?, ?, ?, ?)',
+      [name, dosage, color, notes, alarmEnabled, JSON.stringify(days)],
       (err, results) => {
         if (err) {
           return connection.rollback(() => {
@@ -41,5 +59,7 @@ const addMedication = (req, res) => {
     );
   });
 };
+
+
 
 module.exports = { addMedication };
