@@ -25,3 +25,8 @@ const PORT = 5000;
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
+
+app.use((req, res, next) => {
+  console.log(`Solicitud recibida: ${req.method} ${req.url}`); // Log para verificar las solicitudes
+  next();
+});
