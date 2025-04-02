@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const userRoutes = require('./src/routes/userRoutes');
 const medicationRoutes = require('./src/routes/medicationRoutes');
 const healthRoutes = require('./src/routes/healthRoutes');
+const dialysisRoutes = require('./src/routes/dialysisRoutes');
 
 const app = express();
 
@@ -21,6 +22,7 @@ app.use(bodyParser.json());
 app.use('/api', userRoutes);
 app.use('/api', medicationRoutes);
 app.use('/api', healthRoutes);
+app.use('/api', dialysisRoutes);
 
 // Iniciar el servidor
 const PORT = 5000;
