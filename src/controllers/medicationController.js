@@ -106,7 +106,8 @@ const getMedicationsByDate = (req, res) => {
     m.color,
     m.notes,
     COALESCE(mi.taken, 0) AS taken,
-    mt.active
+    mt.active,
+    m.alarm_enabled
   FROM medications m
   JOIN medication_times mt ON m.id = mt.medication_id
   LEFT JOIN medication_intakes mi ON mt.id = mi.time_id AND mi.date = ?
@@ -293,99 +294,6 @@ const updateMedication = (req, res) => {
   });
 };
 
-/*
-
-
-const softDeleteMedication = async (req, res) => {
-  
-  //console.log("Llegó petición a softDeleteMedication"); // Verifica esto
-  //console.log("Headers:", req.headers); // Revisa el token
-  console.log("Body:", req.body); // Revisa el time_id
-  
- const { time_id } = req.body;
-  const token = req.headers.authorization.replace('Bearer ', '');
-
-
-
-  
-  console.log('Token recibido:', token ? '✔' : '✖'); // Debug 2
-
-  if (!token) {
-    console.log('Error: No token provided');
-    return res.status(401).json({ error: 'No token provided' });
-  }
-
-  try {
-    // Verificación del token
-    const decoded = jwt.verify(token.replace('Bearer ', ''), SECRET_KEY, { algorithms: ['HS256'] });
-    console.log('Usuario ID:', decoded.id); // Debug 3
-
-    const { time_id } = req.body;
-    console.log('Time_ID recibido:', time_id); // Debug 4
-
-    if (!time_id) {
-      console.log('Error: time_id no proporcionado');
-      return res.status(400).json({ error: 'time_id is required' });
-    }
-
-    // Debug: Verificar existencia del registro
-    const [check] = await connection.promise().query(
-      `SELECT mt.id FROM medication_times mt
-       JOIN medications m ON mt.medication_id = m.id
-       WHERE mt.id = ? AND m.user_id = ?`,
-      [time_id, decoded.id]
-    );
-    console.log('Registros encontrados:', check.length); // Debug 5
-
-    if (check.length === 0) {
-      console.log(' Error: Medicamento no encontrado o no pertenece al usuario');
-      return res.status(404).json({ error: 'Medication not found' });
-    }
-
-    // Actualización con JOIN explícito
-    const [result] = await connection.promise().query(
-      `UPDATE medication_times mt
-       JOIN medications m ON mt.medication_id = m.id
-       SET mt.active = 0
-       WHERE mt.id = ? AND m.user_id = ?`,
-      [time_id, decoded.id]
-    );
-    console.log('Filas afectadas:', result.affectedRows); // Debug 6
-
-    if (result.affectedRows === 0) {
-      console.log(' Advertencia: Ninguna fila actualizada');
-    }
-
-    // Limpieza opcional de registros futuros
-    const today = new Date().toISOString().split('T')[0];
-    const [deleteResult] = await connection.promise().query(
-      `DELETE FROM medication_intakes
-       WHERE time_id = ? AND date > ?`,
-      [time_id, today]
-    );
-    console.log('Registros futuros eliminados:', deleteResult.affectedRows); // Debug 7
-
-    console.log(' Eliminación suave completada con éxito');
-    return res.json({ 
-      success: true,
-      updated: result.affectedRows,
-      deleted: deleteResult.affectedRows
-    });
-
-  } catch (error) {
-    console.error(' Error crítico:', {
-      message: error.message,
-      stack: error.stack,
-      sqlError: error.sqlMessage
-    });
-    return res.status(500).json({ 
-      error: 'Database error',
-      details: error.message
-    });
-  }
-};
-
-*/
 
 const softDeleteMedication = async (req, res) => {
   
@@ -464,5 +372,45 @@ const softDeleteMedication = async (req, res) => {
 };
 
 
+const updateMedicationAlarmStatus = (req, res) => {
+  const token = req.headers['authorization'];
+  const { time_id } = req.params;
+  const { alarmEnabled } = req.body;
 
-module.exports = { addMedication, getMedicationsByDate, updateMedicationTakenStatus, recordMedicationTaken, updateMedication , softDeleteMedication };
+  if (!token) {
+    return res.status(401).json({ error: 'No token provided' });
+  }
+
+  jwt.verify(token.replace('Bearer ', ''), SECRET_KEY, { algorithms: ['HS256'] }, (err, decoded) => {
+    if (err) {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+
+    const userId = decoded.id;
+
+    // Actualizar el campo alarm_enabled en la tabla medications
+    const query = `
+      UPDATE medications m
+      JOIN medication_times mt ON m.id = mt.medication_id
+      SET m.alarm_enabled = ?
+      WHERE mt.id = ? AND m.user_id = ?
+    `;
+
+    connection.query(query, [alarmEnabled ? 1 : 0, time_id, userId], (err, result) => {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ error: 'Medicamento no encontrado o no autorizado' });
+      }
+
+      res.json({ message: 'Estado de alarma actualizado correctamente' });
+    });
+  });
+};
+
+
+
+
+module.exports = { addMedication, getMedicationsByDate, updateMedicationTakenStatus, recordMedicationTaken, updateMedication , softDeleteMedication, updateMedicationAlarmStatus  };

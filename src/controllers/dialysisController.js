@@ -13,7 +13,6 @@ const saveDialysisTreatment = (req, res) => {
   });
 
 
-
  ///console.log('Token:', token);
 //console.log('Datos enviados:', treatmentData);
 
