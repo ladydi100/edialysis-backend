@@ -1,3 +1,3 @@
 module.exports = {
-  SECRET_KEY: 'secretkey', // Define la clave secreta aquí
+  SECRET_KEY: 'secretkey', 
 };

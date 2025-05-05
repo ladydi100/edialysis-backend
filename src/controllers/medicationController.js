@@ -1,3 +1,5 @@
+
+//controller/medicationController.js
 const jwt = require('jsonwebtoken');
 const connection = require('../config/db');
 const { SECRET_KEY } = require('../config/auth'); // Importar la clave secreta
@@ -89,12 +91,13 @@ const getMedicationsByDate = (req, res) => {
     const queryDate = new Date(date);
     //const dayOfWeek = queryDate.toLocaleString('en-US', { weekday: 'long' });
     // Asegurarnos que la fecha se interpreta correctamente
-    const adjustedDate = new Date(queryDate.getTime() + queryDate.getTimezoneOffset() * 60000);
+   
+
     
     // Obtener el día de la semana en inglés (como está guardado en la BD)
-    const dayOfWeek = adjustedDate.toLocaleString('en-US', { weekday: 'long', timeZone: 'UTC' });
+    const dayOfWeek =queryDate.toLocaleString('en-US', { weekday: 'long', timeZone: 'UTC' });
 
-    console.log(`Buscando medicamentos para ${date} (día: ${dayOfWeek})`);
+    console.log(`Fecha recibida: ${date} (día: ${dayOfWeek})`);
 
  const query = `
   SELECT 

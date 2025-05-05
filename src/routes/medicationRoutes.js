@@ -1,3 +1,4 @@
+//routes/medicationRoutes.js
 const express = require('express');
 const { addMedication, getMedicationsByDate,updateMedicationTakenStatus, recordMedicationTaken , updateMedication, softDeleteMedication, updateMedicationAlarmStatus} = require('../controllers/medicationController');
 
